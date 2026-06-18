@@ -142,3 +142,34 @@ POST   /.netlify/functions/admin-games?action=reset
 ## Если каталог не сохраняется
 
 Проверь Netlify Functions logs. Если функции не запускаются, значит проект был загружен как чистая статическая папка без build-процесса. Разверни через Git или Netlify CLI.
+
+## Исправление ошибки Netlify Blobs `siteID, token`
+
+Если при редактировании каталога появляется ошибка:
+
+```text
+The environment has not been configured to use Netlify Blobs. To use it manually, supply the following properties when creating a store: siteID, token
+```
+
+добавьте в Netlify две дополнительные переменные окружения:
+
+```env
+NETLIFY_BLOBS_SITE_ID=<Project ID вашего сайта Netlify>
+NETLIFY_BLOBS_TOKEN=<Personal access token Netlify>
+```
+
+Где взять `NETLIFY_BLOBS_SITE_ID`:
+
+1. Откройте сайт в Netlify.
+2. Перейдите в `Project configuration` → `General` → `Project information`.
+3. Скопируйте `Project ID`.
+
+Где взять `NETLIFY_BLOBS_TOKEN`:
+
+1. Откройте настройки пользователя Netlify.
+2. Перейдите в `Applications` → `Personal access tokens`.
+3. Создайте новый token.
+4. Скопируйте его и добавьте в переменную окружения Netlify.
+
+После добавления переменных выполните новый деплой: `Deploys` → `Trigger deploy` → `Clear cache and deploy site`.
+

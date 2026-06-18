@@ -8,13 +8,33 @@ function cloneDefaults() {
   return defaultGames.map((game) => ({ ...game, t: Array.isArray(game.t) ? [...game.t] : [] }));
 }
 
+function envValue(...names) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return '';
+}
+
 function getCatalogStore() {
-  return getStore(STORE_NAME);
+  // В Netlify Functions Blobs обычно должны настраиваться автоматически.
+  // Но на некоторых деплоях/режимах совместимости автоматический контекст не передается.
+  // Поэтому поддерживаем ручную настройку через переменные окружения.
+  const siteID = envValue('NETLIFY_BLOBS_SITE_ID', 'BLOBS_SITE_ID', 'NETLIFY_SITE_ID', 'SITE_ID');
+  const token = envValue('NETLIFY_BLOBS_TOKEN', 'BLOBS_TOKEN', 'NETLIFY_AUTH_TOKEN');
+
+  const options = { name: STORE_NAME, consistency: 'strong' };
+  if (siteID && token) {
+    options.siteID = siteID;
+    options.token = token;
+  }
+
+  return getStore(options);
 }
 
 async function loadCatalog() {
   const store = getCatalogStore();
-  const stored = await store.get(KEY, { type: 'json' });
+  const stored = await store.get(KEY, { type: 'json', consistency: 'strong' });
   if (!stored) {
     const payload = { games: cloneDefaults(), updatedAt: new Date().toISOString() };
     await store.setJSON(KEY, payload);
